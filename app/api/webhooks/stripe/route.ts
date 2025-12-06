@@ -42,6 +42,9 @@ export async function POST(req: Request) {
 
   const type = event.type;
 
+  // -------------------------
+  // SUCCESS EVENT
+  // -------------------------
   if (type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const metadata = session.metadata ?? {};
@@ -62,13 +65,7 @@ export async function POST(req: Request) {
     const email = session.customer_email ?? driverEmail;
     const amountTotal = (session.amount_total ?? 0) / 100;
 
-    if (
-      !carId ||
-      !pickupDate ||
-      !dropoffDate ||
-      !pickupTime ||
-      !dropoffTime
-    ) {
+    if (!carId || !pickupDate || !dropoffDate || !pickupTime || !dropoffTime) {
       console.error("Missing booking metadata", metadata);
       return NextResponse.json({ received: true });
     }
@@ -97,7 +94,10 @@ export async function POST(req: Request) {
 
         const user = await tx.user.upsert({
           where: { email },
-          update: { name: driverName ?? undefined, phone: driverPhone ?? undefined },
+          update: {
+            name: driverName ?? undefined,
+            phone: driverPhone ?? undefined,
+          },
           create: {
             email,
             name: driverName ?? null,
@@ -178,6 +178,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ received: true });
   }
 
+  // -------------------------
+  // FAILURE EVENTS
+  // -------------------------
+
+  // PaymentIntent failed
   if (type === "payment_intent.payment_failed") {
     const pi = event.data.object as Stripe.PaymentIntent;
     const sessionId =
@@ -186,23 +191,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ received: true });
   }
 
-  if (type === "checkout.session.payment_failed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    await updateReservationStatus(session.id, "failed");
-    return NextResponse.json({ received: true });
-  }
-
-  if (type === "checkout.session.expired") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    await updateReservationStatus(session.id, "failed");
-    return NextResponse.json({ received: true });
-  }
-
+  // Checkout async payment failed (SCA, bank declines etc)
   if (type === "checkout.session.async_payment_failed") {
     const session = event.data.object as Stripe.Checkout.Session;
     await updateReservationStatus(session.id, "failed");
     return NextResponse.json({ received: true });
   }
 
+  // Checkout session expired (never paid)
+  if (type === "checkout.session.expired") {
+    const session = event.data.object as Stripe.Checkout.Session;
+    await updateReservationStatus(session.id, "failed");
+    return NextResponse.json({ received: true });
+  }
+
+  // Default
   return NextResponse.json({ received: true });
 }
