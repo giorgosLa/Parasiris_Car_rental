@@ -20,6 +20,74 @@ async function updateReservationStatus(sessionId: string, status: string) {
   });
 }
 
+async function upsertReservationFromSession(
+  session: Stripe.Checkout.Session,
+  status: "pending" | "confirmed" | "failed",
+  amountTotalOverride?: number
+) {
+  const metadata = session.metadata ?? {};
+
+  const email = session.customer_email ?? metadata.driverEmail;
+  const driverName = metadata.driverName ?? null;
+  const driverPhone = metadata.driverPhone ?? null;
+  const carIdNumber = Number(metadata.carId);
+  const pickupDate = metadata.pickupDate;
+  const dropoffDate = metadata.dropoffDate;
+  const pickupTime = metadata.pickupTime;
+  const dropoffTime = metadata.dropoffTime;
+
+  if (
+    !email ||
+    !carIdNumber ||
+    Number.isNaN(carIdNumber) ||
+    !pickupDate ||
+    !dropoffDate ||
+    !pickupTime ||
+    !dropoffTime
+  ) {
+    console.error("Missing booking metadata for reservation upsert", metadata);
+    return null;
+  }
+
+  const startDate = new Date(`${pickupDate}T${pickupTime}:00`);
+  const endDate = new Date(`${dropoffDate}T${dropoffTime}:00`);
+
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: { name: driverName ?? undefined, phone: driverPhone ?? undefined },
+    create: { email, name: driverName, phone: driverPhone },
+  });
+
+  const totalCost =
+    amountTotalOverride ??
+    (typeof session.amount_total === "number"
+      ? session.amount_total / 100
+      : undefined);
+
+  const reservation = await prisma.reservation.upsert({
+    where: { stripeSessionId: session.id },
+    update: {
+      userId: user.id,
+      carId: carIdNumber,
+      startDate,
+      endDate,
+      totalCost: totalCost ?? undefined,
+      status,
+    },
+    create: {
+      stripeSessionId: session.id,
+      userId: user.id,
+      carId: carIdNumber,
+      startDate,
+      endDate,
+      totalCost: totalCost ?? undefined,
+      status,
+    },
+  });
+
+  return reservation;
+}
+
 export async function POST(req: Request) {
   const hdrs = await headers();
   const sig = hdrs.get("stripe-signature");
@@ -84,44 +152,27 @@ export async function POST(req: Request) {
     }
 
     try {
-      const reservation = await prisma.$transaction(async (tx) => {
-        const existing = await tx.reservation.findUnique({
-          where: { stripeSessionId: session.id },
-        });
+      const reservation = await upsertReservationFromSession(
+        session,
+        "confirmed",
+        amountTotal
+      );
 
-        if (existing) {
-          return existing;
-        }
-
-        const user = await tx.user.upsert({
-          where: { email },
+      if (reservation) {
+        await prisma.payment.upsert({
+          where: { reservationId: reservation.id },
           update: {
-            name: driverName ?? undefined,
-            phone: driverPhone ?? undefined,
+            amount: amountTotal,
+            status: "paid",
+            method: "card",
+            transactionId:
+              typeof session.payment_intent === "string"
+                ? session.payment_intent
+                : session.payment_intent?.id ?? "",
+            paidAt: new Date(),
           },
           create: {
-            email,
-            name: driverName ?? null,
-            phone: driverPhone ?? null,
-          },
-        });
-
-        const res = await tx.reservation.create({
-          data: {
-            stripeSessionId: session.id,
-            userId: user.id,
-            carId: carIdNumber,
-            insurancePlanId: null,
-            startDate: new Date(`${pickupDate}T${pickupTime}:00`),
-            endDate: new Date(`${dropoffDate}T${dropoffTime}:00`),
-            totalCost: amountTotal,
-            status: "confirmed",
-          },
-        });
-
-        await tx.payment.create({
-          data: {
-            reservationId: res.id,
+            reservationId: reservation.id,
             amount: amountTotal,
             status: "paid",
             method: "card",
@@ -132,9 +183,7 @@ export async function POST(req: Request) {
             paidAt: new Date(),
           },
         });
-
-        return res;
-      });
+      }
 
       if (!resend) {
         console.warn("Resend not configured. Skipping email notifications.");
@@ -189,28 +238,39 @@ export async function POST(req: Request) {
     const meta = (pi.metadata || {}) as Record<string, string>;
     const sessionId =
       meta.session_id || meta.checkout_session_id || meta.checkoutSessionId || "";
-    await updateReservationStatus(sessionId, "failed");
+
+    if (sessionId) {
+      try {
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        await upsertReservationFromSession(session, "failed");
+      } catch (err) {
+        console.error("Failed to retrieve session for payment_intent failure", err);
+      }
+    } else {
+      await updateReservationStatus(sessionId, "failed");
+    }
+
     return NextResponse.json({ received: true });
   }
 
   // Checkout payment failed (synchronous payment error)
   if (type === "checkout.session.payment_failed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    await updateReservationStatus(session.id, "failed");
+    await upsertReservationFromSession(session, "failed");
     return NextResponse.json({ received: true });
   }
 
   // Checkout async payment failed (SCA, bank declines etc)
   if (type === "checkout.session.async_payment_failed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    await updateReservationStatus(session.id, "failed");
+    await upsertReservationFromSession(session, "failed");
     return NextResponse.json({ received: true });
   }
 
   // Checkout session expired (never paid)
   if (type === "checkout.session.expired") {
     const session = event.data.object as Stripe.Checkout.Session;
-    await updateReservationStatus(session.id, "failed");
+    await upsertReservationFromSession(session, "failed");
     return NextResponse.json({ received: true });
   }
 
