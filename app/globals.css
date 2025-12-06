@@ -16,7 +16,7 @@
 }
 
 .react-datepicker__day--selected {
-  background-color: #2563eb !important;
+  background-color: #eb9f25 !important; /*here was blue*/
   color: white !important;
   border-radius: 0.5rem !important;
 }
@@ -48,8 +48,7 @@
   border-radius: 14px !important;
   padding: 12px !important;
   margin: 4px !important;
-  box-shadow: 0 6px 18px rgba(249, 115, 22, 0.12),
-    inset 0 0 0 1px #ffd8b5;
+  box-shadow: 0 6px 18px rgba(249, 115, 22, 0.12), inset 0 0 0 1px #ffd8b5;
   flex: 1 1 0 !important;
   width: 50% !important;
   min-width: 0 !important;
@@ -100,8 +99,10 @@
   border-radius: 12px !important;
 }
 
-.react-datepicker__day--outside-month {
-  visibility: hidden !important;
+.custom-range-calendar .react-datepicker__day--outside-month {
+  color: transparent !important;
+  opacity: 0.35 !important;
+  pointer-events: none !important;
 }
 
 .calendar-today {

@@ -200,28 +200,13 @@ export default function CarRentalSearchBar({
   };
 
   return (
-    <div className={`w-full max-w-6xl mx-auto mt-16 mb-12 px-4 ${className || ""}`}>
-      <div className="bg-white/90 backdrop-blur-md border border-orange-100 shadow-xl rounded-3xl p-4 md:p-6 space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.1em] text-orange-500 font-semibold">
-              {t("searchbar.title")}
-            </p>
-            <p className="text-lg font-semibold text-gray-900">
-              {t("searchbar.subtitle")}
-            </p>
-          </div>
-          <button
-            onClick={handleSearch}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-md hover:shadow-lg transition"
-          >
-            <FaSearch />
-            {t("search.searchBtn")}
-          </button>
-        </div>
-
-        {/* MAIN BAR */}
-        <div className="flex flex-col md:flex-row items-center bg-orange-50/70 rounded-2xl shadow-inner border border-orange-100 p-3 md:p-4 gap-3 md:gap-5">
+    <div
+      className={`w-full max-w-6xl mx-auto mt-16 mb-12 px-4 ${
+        className || ""
+      }`}
+    >
+      {/* MAIN BAR */}
+      <div className="flex flex-col md:flex-row items-center bg-[#f3f4f6] rounded-2xl md:rounded-full shadow-lg p-3 md:p-4 gap-3 md:gap-5">
         {/* PICKUP LOCATION */}
         <LocationButton
           label={t("search.pickupLocation")}
@@ -270,6 +255,14 @@ export default function CarRentalSearchBar({
           value={dropoffTime}
           onClick={() => setShowDropoffTimePopup(true)}
         />
+
+        {/* SEARCH BTN */}
+        <button
+          onClick={handleSearch}
+          className="bg-blue-500 text-white flex items-center gap-2 rounded-full px-6 py-3 font-semibold hover:bg-orange-600 transition md:ml-3 shadow-md"
+        >
+          <FaSearch /> {t("search.searchBtn")}
+        </button>
       </div>
 
       {/* Toggle Different dropoff */}
@@ -341,7 +334,6 @@ export default function CarRentalSearchBar({
           }}
         />
       )}
-      </div>
     </div>
   );
 }
