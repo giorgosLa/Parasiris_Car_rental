@@ -40,19 +40,7 @@ model Car {
   Reservation   Reservation[]
   CalendarPrice CalendarPrice[]
   CarCategory   CarCategory?    @relation(fields: [categoryId], references: [id])
-  CarImage      CarImage[]
   SpecialPrice  SpecialPrice[]
-}
-
-model CarImage {
-  id        Int      @id @default(autoincrement())
-  carId     Int
-  imageUrl  String
-  alt       String?
-  createdAt DateTime @default(now())
-  Car       Car      @relation(fields: [carId], references: [id])
-
-  @@index([carId])
 }
 
 model SpecialPrice {

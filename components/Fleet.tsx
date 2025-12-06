@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 
 type FleetCar = Prisma.CarGetPayload<{
-  include: { CarCategory: true; CarImage: true };
+  include: { CarCategory: true };
 }>;
 
 export const revalidate = 0;
@@ -12,7 +12,6 @@ export const dynamic = "force-dynamic";
 function mapCarToCard(car: FleetCar): Car {
   const image =
     car.imageUrl?.trim() ||
-    car.CarImage[0]?.imageUrl?.trim() ||
     "/images/no-car.png";
 
   return {
@@ -34,7 +33,7 @@ function mapCarToCard(car: FleetCar): Car {
 
 export default async function Fleet() {
   const cars = await prisma.car.findMany({
-    include: { CarCategory: true, CarImage: true },
+    include: { CarCategory: true },
     orderBy: [{ make: "asc" }, { model: "asc" }],
   });
 

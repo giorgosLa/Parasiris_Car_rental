@@ -44,7 +44,6 @@ export async function POST(req: Request) {
       },
       include: {
         CarCategory: true,
-        CarImage: true,
       },
     });
 
@@ -65,9 +64,7 @@ export async function POST(req: Request) {
         transmission: car.transmission,
 
         image:
-          car.imageUrl?.trim() ||
-          car.CarImage?.[0]?.imageUrl?.trim() ||
-          "/images/default-car.jpg",
+          car.imageUrl?.trim() || "/images/default-car.jpg",
 
         dailyPrice: daily,
         pricePerDay: daily,

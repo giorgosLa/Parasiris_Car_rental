@@ -29,10 +29,9 @@ export function mapCarToSearchResult(
     fuelType: car.fuelType,
     category: car.CarCategory?.name || null,
 
-    // Προτιμά το imageUrl (Cloudinary), μετά CarImage, μετά fallback
+    // Προτιμά το imageUrl (Cloudinary), μετά fallback
     image:
       car.imageUrl?.trim() ||
-      car.CarImage?.[0]?.imageUrl?.trim() ||
       "/images/no-car.png",
 
     // Τιμές από pricing

@@ -4,7 +4,6 @@ import type { Prisma } from "@prisma/client";
 
 export type CarWithPricing = Prisma.CarGetPayload<{
   include: {
-    CarImage: true;
     CalendarPrice: true;
     SpecialPrice: true;
     Reservation: true;
@@ -62,7 +61,6 @@ export class CarService {
       },
 
       include: {
-        CarImage: true,
         CalendarPrice: true,
         SpecialPrice: true,
         Reservation: true,
