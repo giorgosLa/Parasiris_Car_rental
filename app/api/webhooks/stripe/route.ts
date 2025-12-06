@@ -185,9 +185,17 @@ export async function POST(req: Request) {
   // PaymentIntent failed
   if (type === "payment_intent.payment_failed") {
     const pi = event.data.object as Stripe.PaymentIntent;
+    const meta = (pi.metadata || {}) as Record<string, string>;
     const sessionId =
-      (pi.metadata && (pi.metadata as Record<string, string>).session_id) || "";
+      meta.session_id || meta.checkout_session_id || meta.checkoutSessionId || "";
     await updateReservationStatus(sessionId, "failed");
+    return NextResponse.json({ received: true });
+  }
+
+  // Checkout payment failed (synchronous payment error)
+  if (type === "checkout.session.payment_failed") {
+    const session = event.data.object as Stripe.Checkout.Session;
+    await updateReservationStatus(session.id, "failed");
     return NextResponse.json({ received: true });
   }
 

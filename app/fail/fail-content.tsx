@@ -42,7 +42,7 @@ export default function FailedContent() {
 
         if (data.status === "confirmed") {
           clearInterval(interval);
-          router.push(`/success?session_id=${sessionId}`);
+          router.push(`/fail?session_id=${sessionId}`);
           return;
         }
       } catch (err) {

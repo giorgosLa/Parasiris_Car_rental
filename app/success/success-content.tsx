@@ -50,7 +50,7 @@ export default function SuccessContent() {
 
         if (data.status === "failed") {
           clearInterval(interval);
-          router.push("/failed");
+          router.push("/fail");
           return;
         }
       } catch (err) {
