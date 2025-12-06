@@ -328,6 +328,7 @@ export default function CarRentalSearchBar({
           }}
         />
       )}
+      </div>
     </div>
   );
 }

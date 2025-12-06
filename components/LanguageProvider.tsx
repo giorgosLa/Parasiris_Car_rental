@@ -19,9 +19,6 @@ const translations: Translations = {
     "hero.subtitle":
       "Explore the beauty of Greece with comfort and freedom. Choose from a wide range of vehicles at airports and ports across the islands.",
 
-    "fleet.title": "Our Fleet",
-    "fleet.empty": "No vehicles found in the database.",
-
     "search.pickupLocation": "Pick-up Location",
     "search.dropoffLocation": "Drop-off Location",
     "search.pickupDate": "Pick-up Date",
@@ -265,12 +262,6 @@ const translations: Translations = {
     "hero.title": "Ενοικίασε το ιδανικό αυτοκίνητο στην Ελλάδα",
     "hero.subtitle":
       "Εξερεύνησε την ομορφιά της Ελλάδας με άνεση και ελευθερία. Διάλεξε ανάμεσα σε πολλά οχήματα σε αεροδρόμια και λιμάνια των νησιών.",
-
-    "fleet.title": "Ο Στόλος μας",
-    "fleet.empty": "Δεν βρέθηκαν οχήματα στη βάση.",
-    "fleet.tag": "Premium επιλογή",
-    "fleet.subtitle":
-      "Εξερεύνησε τον προσεκτικά επιλεγμένο στόλο μας, συντηρημένο και έτοιμο για ταξίδια, αεροδρόμια και αποδράσεις στην πόλη.",
 
     "search.pickupLocation": "Σημείο παραλαβής",
     "search.dropoffLocation": "Σημείο επιστροφής",
