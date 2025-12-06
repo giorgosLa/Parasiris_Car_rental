@@ -40,7 +40,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  const type = event.type;
+  // Stripe types may not include newer events; treat as string for comparisons
+  const type = event.type as string;
 
   // -------------------------
   // SUCCESS EVENT
