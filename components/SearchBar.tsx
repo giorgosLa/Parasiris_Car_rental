@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import DatePicker from "react-datepicker";
+import { useEffect, useMemo, useState } from "react";
+import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -20,6 +20,7 @@ import {
   FaShip,
 } from "react-icons/fa";
 import { format } from "date-fns";
+import { enUS, el as elLocale } from "date-fns/locale";
 
 type LocationType = "airport" | "port" | "region";
 
@@ -71,6 +72,13 @@ export default function CarRentalSearchBar({
   const router = useRouter();
   const t = useTranslation();
   const { lang } = useLanguage();
+
+  useEffect(() => {
+    registerLocale("en", enUS);
+    registerLocale("el", elLocale);
+  }, []);
+
+  const dpLocale = useMemo(() => (lang === "el" ? elLocale : enUS), [lang]);
 
   const { searchCars } = useCarSearch();
   const { setSearchData } = useSearchStore();
@@ -452,6 +460,9 @@ function DateRangePopup({
   onSelect: (start: Date, end: Date) => void;
   onClose: () => void;
 }) {
+  const { lang } = useLanguage();
+  const dpLocale = useMemo(() => (lang === "el" ? elLocale : enUS), [lang]);
+
   const [range, setRange] = useState<[Date | null, Date | null]>([
     startDate,
     endDate,
@@ -520,6 +531,7 @@ function DateRangePopup({
           endDate={range[1]}
           selectsRange
           minDate={minDate}
+          locale={dpLocale}
           dayClassName={getDayClassName}
           calendarClassName="custom-range-calendar"
           onChange={(dates) => handleChange(dates as [Date | null, Date | null])}
@@ -536,7 +548,7 @@ function DateRangePopup({
               >
                 ←
               </button>
-              <span>{format(monthDate, "MMMM yyyy")}</span>
+              <span>{format(monthDate, "MMMM yyyy", { locale: dpLocale })}</span>
               <button
                 type="button"
                 onClick={increaseMonth}
