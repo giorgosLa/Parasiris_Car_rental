@@ -169,6 +169,7 @@ model Reservation {
   endDate          DateTime
   discount         Decimal?       @db.Decimal(4, 3)
   longTermDiscount Boolean        @default(false)
+  stripeSessionId  String?  @unique
   totalCost        Decimal?       @db.Decimal(12, 2)
   status           String         @default("pending")
   createdAt        DateTime       @default(now())
