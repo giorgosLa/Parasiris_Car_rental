@@ -253,7 +253,22 @@ export async function POST(req: Request) {
         console.error("Failed to retrieve session for payment_intent failure", err);
       }
     } else {
-      await updateReservationStatus(sessionId, "failed");
+      try {
+        // Try to locate the Checkout Session via payment_intent reference
+        const sessions = await stripe.checkout.sessions.list({
+          payment_intent: pi.id,
+          limit: 1,
+        });
+        const found = sessions.data?.[0];
+        if (found) {
+          await upsertReservationFromSession(found, "failed");
+        } else {
+          await updateReservationStatus(sessionId, "failed");
+        }
+      } catch (err) {
+        console.error("Failed to lookup Checkout Session for payment_intent", err);
+        await updateReservationStatus(sessionId, "failed");
+      }
     }
 
     return NextResponse.json({ received: true });
