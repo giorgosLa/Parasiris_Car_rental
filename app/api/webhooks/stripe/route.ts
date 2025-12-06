@@ -180,7 +180,15 @@ export async function POST(req: Request) {
 
   if (type === "payment_intent.payment_failed") {
     const pi = event.data.object as Stripe.PaymentIntent;
-    await updateReservationStatus(pi.metadata?.session_id ?? "", "failed");
+    const sessionId =
+      (pi.metadata && (pi.metadata as Record<string, string>).session_id) || "";
+    await updateReservationStatus(sessionId, "failed");
+    return NextResponse.json({ received: true });
+  }
+
+  if (type === "checkout.session.payment_failed") {
+    const session = event.data.object as Stripe.Checkout.Session;
+    await updateReservationStatus(session.id, "failed");
     return NextResponse.json({ received: true });
   }
 
