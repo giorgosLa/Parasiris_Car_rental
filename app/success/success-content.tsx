@@ -71,7 +71,7 @@ export default function SuccessContent() {
   if (loading || !payment) {
     return (
       <div className="p-20 text-center text-gray-500 text-lg">
-        {t("success.verifying")}
+        {t("generic.loading")}
       </div>
     );
   }
@@ -106,7 +106,9 @@ export default function SuccessContent() {
                 <p className="text-xl font-semibold">{selectedCar.make}</p>
                 <p className="text-gray-600">{selectedCar.category}</p>
                 <p className="text-gray-800 font-medium mt-2">
-                  Total Price: €{selectedCar.totalPrice.toFixed(2)}
+                  {t("booking.totalPrice", {
+                    amount: selectedCar.totalPrice.toFixed(2),
+                  })}
                 </p>
               </div>
             </div>

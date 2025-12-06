@@ -74,10 +74,10 @@ export default function Footer() {
             {t("footer.locations")}
           </h3>
           <ul className="space-y-2 text-sm text-gray-300">
-            <li>Heraklion Airport (HER)</li>
-            <li>Chania Airport (CHQ)</li>
-            <li>Heraklion Port</li>
-            <li>Rethymno Center</li>
+            <li>{t("footer.location.herAirport")}</li>
+            <li>{t("footer.location.chnAirport")}</li>
+            <li>{t("footer.location.herPort")}</li>
+            <li>{t("footer.location.rethymno")}</li>
           </ul>
         </div>
 
@@ -101,7 +101,7 @@ export default function Footer() {
       </div>
 
       <div className="max-w-6xl mx-auto mt-12 pt-6 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-        <span>© 2025 Easy Rental - Parasiris. All rights reserved.</span>
+        <span>{t("footer.copy")}</span>
         <div className="flex items-center gap-4">
           <Link href="/terms" className="hover:text-orange-400">
             {t("footer.terms")}

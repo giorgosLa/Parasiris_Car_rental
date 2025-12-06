@@ -40,13 +40,28 @@ export default async function Fleet() {
   const fleetCards = cars.map(mapCarToCard);
 
   return (
-    <section className=" relative container mx-auto px-4 md:px-6 lg:px-8 py-10 md:py-12">
-      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
-        Our Fleet
-      </h2>
+    <section className="relative container mx-auto px-4 md:px-6 lg:px-8 py-12 md:py-16">
+      <div className="absolute inset-0 bg-gradient-to-r from-orange-50 via-white to-blue-50 opacity-70 -z-10 rounded-[32px]" />
+
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div>
+          <p className="text-sm uppercase tracking-[0.08em] text-orange-500 font-semibold">
+            Premium Selection / Premium επιλογή
+          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+            Our Fleet / Ο στόλος μας
+          </h2>
+        </div>
+        <p className="text-gray-600 max-w-2xl">
+          Discover our curated lineup of reliable, fully serviced vehicles ready for
+          island trips, airport transfers, and city escapes. Εξερεύνησε τον προσεκτικά
+          επιλεγμένο στόλο μας, συντηρημένο και έτοιμο για ταξίδια, αεροδρόμια και
+          αποδράσεις στην πόλη.
+        </p>
+      </div>
 
       {fleetCards.length === 0 ? (
-        <p className="text-gray-600">No vehicles found in the database.</p>
+        <p className="text-gray-600">No vehicles found / Δεν βρέθηκαν οχήματα.</p>
       ) : (
         <div className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {fleetCards.map((car) => (

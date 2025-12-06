@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import {
   Users,
@@ -9,6 +11,7 @@ import {
   BadgeCheck,
   Euro,
 } from "lucide-react";
+import { useTranslation } from "./LanguageProvider";
 
 export type Car = {
   id: string;
@@ -27,6 +30,8 @@ export type Car = {
 };
 
 export default function CarCard({ car }: { car: Car }) {
+  const t = useTranslation();
+
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 flex flex-col hover:shadow-2xl transition">
       {/* Title */}
@@ -52,7 +57,9 @@ export default function CarCard({ car }: { car: Car }) {
             car.available ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
           }`}
         >
-          {car.available ? "Available" : "Unavailable"}
+          {car.available
+            ? `${t("car.available")}`
+            : `${t("car.unavailable")}`}
         </span>
       </div>
 
@@ -69,18 +76,24 @@ export default function CarCard({ car }: { car: Car }) {
 
       {/* Specs */}
       <div className="mt-1 grid grid-cols-2 gap-x-6 gap-y-3 text-sm text-gray-700">
-        <Spec icon={<Users className="w-4 h-4" />} label={`${car.seats} seats`} />
-        <Spec icon={<Fuel className="w-4 h-4" />} label={car.fuelType} />
-        <Spec icon={<Cog className="w-4 h-4" />} label={car.transmission} />
-        <Spec icon={<CalendarRange className="w-4 h-4" />} label={`Year ${car.year}`} />
-        <Spec icon={<Hash className="w-4 h-4" />} label={car.licensePlate} />
+        <Spec
+          icon={<Users className="w-4 h-4" />}
+          label={t("car.seats", { count: car.seats })}
+        />
+        <Spec icon={<Fuel className="w-4 h-4" />} label={t("car.fuel", { fuel: car.fuelType })} />
+        <Spec icon={<Cog className="w-4 h-4" />} label={t("car.transmission", { transmission: car.transmission })} />
+        <Spec
+          icon={<CalendarRange className="w-4 h-4" />}
+          label={t("car.year", { year: car.year })}
+        />
+        <Spec icon={<Hash className="w-4 h-4" />} label={t("car.license", { plate: car.licensePlate })} />
         <Spec
           icon={<Euro className="w-4 h-4" />}
-          label={`Daily: €${car.dailyPrice.toFixed(2)}`}
+          label={t("car.daily", { price: car.dailyPrice.toFixed(2) })}
         />
         <Spec
           icon={<BadgeCheck className="w-4 h-4" />}
-          label={`Status: ${car.status}`}
+          label={t("car.status", { status: car.status })}
         />
       </div>
     </div>

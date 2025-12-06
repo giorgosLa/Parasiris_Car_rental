@@ -74,7 +74,7 @@ export default function FailedContent() {
   if (loading) {
     return (
       <div className="p-20 text-center text-gray-500 text-lg">
-        {t("failed.verifying")}
+        {t("generic.loading")}
       </div>
     );
   }
@@ -106,14 +106,16 @@ export default function FailedContent() {
               />
 
               <div>
-                <p className="text-xl font-semibold">{selectedCar.make}</p>
-                <p className="text-gray-600">{selectedCar.category}</p>
-                <p className="text-gray-800 font-medium mt-2">
-                  Total Price: €{selectedCar.totalPrice.toFixed(2)}
-                </p>
-              </div>
-            </div>
-          </section>
+               <p className="text-xl font-semibold">{selectedCar.make}</p>
+               <p className="text-gray-600">{selectedCar.category}</p>
+               <p className="text-gray-800 font-medium mt-2">
+                  {t("booking.totalPrice", {
+                    amount: selectedCar.totalPrice.toFixed(2),
+                  })}
+               </p>
+             </div>
+           </div>
+         </section>
         )}
 
         {/* BOOKING CRITERIA IF EXISTS */}
