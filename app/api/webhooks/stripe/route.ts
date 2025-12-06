@@ -11,25 +11,28 @@ import { stripe } from "@/lib/stripe";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// Reusable update method
 async function updateReservationStatus(sessionId: string, status: string) {
-  return prisma.reservation.updateMany({
+  if (!sessionId) return;
+
+  console.log(`🔄 Updating reservation (${sessionId}) → ${status}`);
+
+  await prisma.reservation.updateMany({
     where: { stripeSessionId: sessionId },
     data: { status },
   });
 }
 
 export async function POST(req: Request) {
-  console.log("🔥 Webhook hit!");
+  console.log("🔥 Webhook hit");
 
   const hdrs = await headers();
   const sig = hdrs.get("stripe-signature");
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   if (!sig || !webhookSecret) {
-    return NextResponse.json(
-      { error: "Webhook not configured" },
-      { status: 500 }
-    );
+    console.error("❌ Missing Stripe signature or webhook secret");
+    return NextResponse.json({ received: true });
   }
 
   let event: Stripe.Event;
@@ -38,60 +41,58 @@ export async function POST(req: Request) {
     const rawBody = await req.text();
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
   } catch (err) {
-    console.error("❌ Invalid Stripe Signature");
+    console.error("❌ Invalid signature");
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  const eventType = event.type;
-  console.log("📨 Event:", eventType);
+  const type = event.type;
+  console.log("📨 Event received:", type);
 
-  //
-  // -----------------------------------------------------
-  // 🟢 1. SUCCESSFUL PAYMENT — checkout.session.completed
-  // -----------------------------------------------------
-  //
-  if (eventType === "checkout.session.completed") {
+  // ============================================================
+  // 🟢 1. SUCCESS — checkout.session.completed
+  // ============================================================
+  if (type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const metadata = session.metadata ?? {};
+
+    console.log("✔ Checkout completed:", session.id);
 
     const {
       carId,
       carName,
+      insuranceTitle,
       driverName,
       driverEmail,
       driverPhone,
-      insuranceTitle,
       pickupDate,
       dropoffDate,
       pickupTime,
       dropoffTime,
+      session_id,
     } = metadata;
 
-    const amountTotal = (session.amount_total ?? 0) / 100;
     const email = session.customer_email ?? driverEmail;
+    const amountTotal = (session.amount_total ?? 0) / 100;
 
     if (!email) {
-      console.error("❌ Missing customer email in metadata");
+      console.error("❌ Missing email");
       return NextResponse.json({ received: true });
     }
 
     try {
-      const result = await prisma.$transaction(async (tx) => {
+      const reservation = await prisma.$transaction(async (tx) => {
         const existing = await tx.reservation.findUnique({
           where: { stripeSessionId: session.id },
         });
 
         if (existing) {
-          console.log("⚠ Reservation exists (duplicate webhook)");
+          console.log("⚠ Existing reservation — skipping duplicate webhook");
           return existing;
         }
 
         const user = await tx.user.upsert({
           where: { email },
-          update: {
-            name: driverName || undefined,
-            phone: driverPhone || undefined,
-          },
+          update: { name: driverName, phone: driverPhone },
           create: {
             email,
             name: driverName ?? null,
@@ -115,12 +116,12 @@ export async function POST(req: Request) {
           data: {
             reservationId: reservation.id,
             amount: amountTotal,
-            method: "card",
             status: "paid",
+            method: "card",
             transactionId:
               typeof session.payment_intent === "string"
                 ? session.payment_intent
-                : session.payment_intent?.id ?? null,
+                : session.payment_intent?.id ?? "",
             paidAt: new Date(),
           },
         });
@@ -128,14 +129,14 @@ export async function POST(req: Request) {
         return reservation;
       });
 
-      // EMAILS
+      // Customer email
       resend.emails.send({
         from: process.env.FROM_EMAIL!,
         to: email,
         subject: "Your Reservation Confirmation",
         react: CustomerReceipt({
           name: driverName!,
-          reservationId: result.id,
+          reservationId: reservation.id,
           pickupDate,
           pickupTime,
           dropoffDate,
@@ -146,45 +147,46 @@ export async function POST(req: Request) {
         }),
       });
 
+      // Owner email
       resend.emails.send({
         from: process.env.FROM_EMAIL!,
         to: process.env.OWNER_EMAIL!,
         subject: "New Car Rental Booking",
         react: OwnerNotification({
-          reservationId: result.id,
+          reservationId: reservation.id,
           customerEmail: email,
           carName,
           total: amountTotal,
         }),
       });
+
+      console.log("📨 Emails sent!");
     } catch (err) {
-      console.error("❌ DB error:", err);
+      console.error("❌ Error saving reservation/payment:", err);
     }
 
     return NextResponse.json({ received: true });
   }
 
-  //
-  // -----------------------------------------------------
-  // 🔴 2. PAYMENT FAILED — payment_intent.payment_failed
-  // -----------------------------------------------------
-  //
-  if (eventType === "payment_intent.payment_failed") {
+  // ============================================================
+  // 🔴 2. FAILED — payment_intent.payment_failed
+  // ============================================================
+  if (type === "payment_intent.payment_failed") {
     const pi = event.data.object as Stripe.PaymentIntent;
-    console.log("❌ Payment failed for PI:", pi.id);
+
+    console.log("❌ Payment failed:", pi.id);
 
     await updateReservationStatus(pi.metadata?.session_id ?? "", "failed");
 
     return NextResponse.json({ received: true });
   }
 
-  //
-  // -----------------------------------------------------
-  // 🟠 3. CHECKOUT EXPIRED — checkout.session.expired
-  // -----------------------------------------------------
-  //
-  if (eventType === "checkout.session.expired") {
+  // ============================================================
+  // 🟠 3. EXPIRED SESSION — checkout.session.expired
+  // ============================================================
+  if (type === "checkout.session.expired") {
     const session = event.data.object as Stripe.Checkout.Session;
+
     console.log("⏳ Checkout expired:", session.id);
 
     await updateReservationStatus(session.id, "failed");
@@ -192,13 +194,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ received: true });
   }
 
-  //
-  // -----------------------------------------------------
-  // 🟡 4. ASYNC (Delayed) PAYMENT FAILED
-  // -----------------------------------------------------
-  //
-  if (eventType === "checkout.session.async_payment_failed") {
+  // ============================================================
+  // 🟡 4. ASYNC PAYMENT FAILED
+  // ============================================================
+  if (type === "checkout.session.async_payment_failed") {
     const session = event.data.object as Stripe.Checkout.Session;
+
     console.log("❌ Async payment failed:", session.id);
 
     await updateReservationStatus(session.id, "failed");
