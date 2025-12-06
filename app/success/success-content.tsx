@@ -18,39 +18,64 @@ export default function SuccessContent() {
   const [loading, setLoading] = useState(true);
   const [payment, setPayment] = useState<StripeSessionData | null>(null);
 
-  // ---- VERIFY PAYMENT ----
+  // -------------------------------------
+  // POLLING + FETCH FINAL PAYMENT DETAILS
+  // -------------------------------------
   useEffect(() => {
     if (!sessionId) {
       router.push("/");
       return;
     }
 
-    const verifyPayment = async () => {
-      try {
-        const res = await fetch(
+    let attempts = 0;
+    const maxAttempts = 15; // ~30 seconds
+
+    const interval = setInterval(async () => {
+      attempts++;
+
+      const res = await fetch(`/api/payments/status?session_id=${sessionId}`);
+      const data = await res.json();
+
+      console.log("🔄 Polling:", data);
+
+      // --- SUCCESS ---
+      if (data.status === "confirmed") {
+        clearInterval(interval);
+
+        // Fetch full Stripe session data
+        const verify = await fetch(
           `/api/payments/session?session_id=${sessionId}`
         );
-        const data: StripeSessionData = await res.json();
 
-        if (!res.ok || data.status !== "paid") {
-          router.push("/checkout");
-          return;
-        }
+        const sessionData: StripeSessionData = await verify.json();
+        setPayment(sessionData);
 
-        setPayment(data);
-        setTimeout(() => clearBooking(), 500);
-      } catch {
-        router.push("/");
-      } finally {
+        clearBooking();
         setLoading(false);
+        return;
       }
-    };
 
-    verifyPayment();
-  }, [clearBooking, router, sessionId]);
+      // --- FAILED ---
+      if (data.status === "failed") {
+        clearInterval(interval);
+        router.push("/failed");
+        return;
+      }
 
-  // ---- Loading UI ----
-  if (loading) {
+      // --- TOO MANY ATTEMPTS ---
+      if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        router.push("/failed");
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [sessionId, router, clearBooking]);
+
+  // -----------------------
+  // LOADING STATE
+  // -----------------------
+  if (loading || !payment) {
     return (
       <div className="p-20 text-center text-gray-500 text-lg">
         {t("success.verifying")}
@@ -58,17 +83,11 @@ export default function SuccessContent() {
     );
   }
 
-  if (!payment) {
-    return (
-      <div className="p-20 text-center text-red-600 text-lg">
-        {t("success.failed")}
-      </div>
-    );
-  }
-
+  // -----------------------
+  // SUCCESS UI
+  // -----------------------
   return (
     <main className="max-w-4xl mx-auto py-16 px-6">
-      {/* HEADER */}
       <h1 className="text-4xl font-bold text-green-600 text-center mb-6">
         {t("success.title")}
       </h1>
@@ -104,7 +123,7 @@ export default function SuccessContent() {
           </section>
         )}
 
-        {/* BOOKING SECTION */}
+        {/* BOOKING INFO */}
         {criteria && (
           <section>
             <h2 className="text-xl font-semibold mb-4 text-gray-800">
@@ -166,7 +185,7 @@ export default function SuccessContent() {
           </div>
         </section>
 
-        {/* ACTION BUTTONS */}
+        {/* BUTTONS */}
         <div className="flex flex-col sm:flex-row gap-4 pt-4">
           <button
             onClick={() => router.push("/")}
