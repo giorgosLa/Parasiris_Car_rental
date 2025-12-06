@@ -34,6 +34,8 @@ export default function SuccessContent() {
         const res = await fetch(`/api/payments/status?session_id=${sessionId}`);
         const data = await res.json();
 
+        console.log("[success-page] status poll:", data);
+
         if (data.status === "confirmed") {
           clearInterval(interval);
 

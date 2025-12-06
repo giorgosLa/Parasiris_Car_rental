@@ -16,6 +16,7 @@ export async function GET(req: Request) {
   if (!reservation) {
     // Fallback to Stripe session status when no reservation found (e.g., payment failed before webhook persisted)
     try {
+      console.log("[payments/status] No reservation found, fetching session", sessionId);
       const session = await stripe.checkout.sessions.retrieve(sessionId);
       const paymentStatus = session.payment_status;
       const sessionStatus = session.status;

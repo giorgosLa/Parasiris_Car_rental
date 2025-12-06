@@ -33,6 +33,8 @@ export default function FailedContent() {
         const res = await fetch(`/api/payments/status?session_id=${sessionId}`);
         const data = await res.json();
 
+        console.log("[fail-page] status poll:", data);
+
         if (data.status === "failed") {
           clearInterval(interval);
           try {

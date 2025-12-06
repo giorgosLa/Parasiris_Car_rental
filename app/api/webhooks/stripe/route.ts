@@ -93,6 +93,8 @@ export async function POST(req: Request) {
   const sig = hdrs.get("stripe-signature");
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
+  console.log("[stripe-webhook] Received request");
+
   if (!sig || !webhookSecret) {
     console.error("Missing Stripe signature or webhook secret");
     return NextResponse.json({ received: true });
@@ -110,6 +112,7 @@ export async function POST(req: Request) {
 
   // Stripe types may not include newer events; treat as string for comparisons
   const type = event.type as string;
+  console.log("[stripe-webhook] Event type:", type);
 
   // -------------------------
   // SUCCESS EVENT
@@ -152,6 +155,7 @@ export async function POST(req: Request) {
     }
 
     try {
+      console.log("[stripe-webhook] Handling checkout.session.completed for", session.id);
       const reservation = await upsertReservationFromSession(
         session,
         "confirmed",
@@ -239,6 +243,8 @@ export async function POST(req: Request) {
     const sessionId =
       meta.session_id || meta.checkout_session_id || meta.checkoutSessionId || "";
 
+    console.log("[stripe-webhook] payment_intent.payment_failed; sessionId:", sessionId);
+
     if (sessionId) {
       try {
         const session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -256,6 +262,7 @@ export async function POST(req: Request) {
   // Checkout payment failed (synchronous payment error)
   if (type === "checkout.session.payment_failed") {
     const session = event.data.object as Stripe.Checkout.Session;
+    console.log("[stripe-webhook] checkout.session.payment_failed:", session.id);
     await upsertReservationFromSession(session, "failed");
     return NextResponse.json({ received: true });
   }
@@ -263,6 +270,7 @@ export async function POST(req: Request) {
   // Checkout async payment failed (SCA, bank declines etc)
   if (type === "checkout.session.async_payment_failed") {
     const session = event.data.object as Stripe.Checkout.Session;
+    console.log("[stripe-webhook] checkout.session.async_payment_failed:", session.id);
     await upsertReservationFromSession(session, "failed");
     return NextResponse.json({ received: true });
   }
@@ -270,6 +278,7 @@ export async function POST(req: Request) {
   // Checkout session expired (never paid)
   if (type === "checkout.session.expired") {
     const session = event.data.object as Stripe.Checkout.Session;
+    console.log("[stripe-webhook] checkout.session.expired:", session.id);
     await upsertReservationFromSession(session, "failed");
     return NextResponse.json({ received: true });
   }
