@@ -50,7 +50,7 @@ export default function SuccessContent() {
 
         if (data.status === "failed") {
           clearInterval(interval);
-          router.push("/fail");
+          router.push(`/fail?session_id=${sessionId}`);
           return;
         }
       } catch (err) {
@@ -59,7 +59,7 @@ export default function SuccessContent() {
 
       if (attempts >= maxAttempts) {
         clearInterval(interval);
-        router.push("/failed");
+        router.push(`/fail?session_id=${sessionId}`);
       }
     }, 2000);
 

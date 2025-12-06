@@ -35,6 +35,17 @@ export default function FailedContent() {
 
         if (data.status === "failed") {
           clearInterval(interval);
+          try {
+            const sessionRes = await fetch(
+              `/api/payments/session?session_id=${sessionId}`
+            );
+            if (sessionRes.ok) {
+              const sessionData: StripeSessionData = await sessionRes.json();
+              setPayment(sessionData);
+            }
+          } catch (err) {
+            console.error("Failed to fetch session for failed payment:", err);
+          }
           setLoading(false);
           setTimeout(() => clearBooking(), 500);
           return;
@@ -42,7 +53,7 @@ export default function FailedContent() {
 
         if (data.status === "confirmed") {
           clearInterval(interval);
-          router.push(`/fail?session_id=${sessionId}`);
+          router.push(`/success?session_id=${sessionId}`);
           return;
         }
       } catch (err) {
