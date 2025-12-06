@@ -28,10 +28,10 @@
 
 .custom-range-calendar {
   background: #f6faff !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 12px !important;
-  border-radius: 16px !important;
+  border: 1px solid #ffe4d1 !important;
+  box-shadow: 0 10px 30px rgba(249, 115, 22, 0.12) !important;
+  padding: 10px !important;
+  border-radius: 18px !important;
   display: flex !important;
   gap: 10px !important;
   flex-wrap: nowrap !important;
@@ -44,12 +44,12 @@
 }
 
 .custom-range-calendar .react-datepicker__month-container {
-  background: #ffffff !important;
+  background: #fffaf5 !important;
   border-radius: 14px !important;
-  padding: 10px !important;
+  padding: 12px !important;
   margin: 4px !important;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06),
-    inset 0 0 0 1px #e2e8f0;
+  box-shadow: 0 6px 18px rgba(249, 115, 22, 0.12),
+    inset 0 0 0 1px #ffd8b5;
   flex: 1 1 0 !important;
   width: 50% !important;
   min-width: 0 !important;
@@ -60,19 +60,24 @@
 }
 
 .custom-range-calendar .react-datepicker__current-month {
-  color: #0f172a !important;
+  color: #ea580c !important;
   font-weight: 700 !important;
 }
 
 .custom-range-calendar .react-datepicker__day-name {
-  color: #0ea5e9 !important;
-  font-weight: 600 !important;
+  color: #f97316 !important;
+  font-weight: 700 !important;
 }
 
 .custom-range-calendar .react-datepicker__day {
-  background: #f8fafc;
-  border-radius: 9999px;
-  margin: 2px;
+  background: #fff3e5;
+  border-radius: 14px;
+  margin: 3px;
+  width: 44px;
+  height: 44px;
+  line-height: 44px;
+  text-align: center;
+  font-weight: 600;
 }
 
 .react-datepicker__day--selected,
@@ -83,16 +88,16 @@
 
 .calendar-range-start,
 .calendar-range-end {
-  background: #22c55e !important;
+  background: #f97316 !important;
   color: #ffffff !important;
-  border-radius: 9999px !important;
-  box-shadow: 0 0 0 2px #16a34a !important;
+  border-radius: 12px !important;
+  box-shadow: 0 0 0 3px #fed7aa !important;
 }
 
 .calendar-range-middle {
-  background: #d1fae5 !important;
-  color: #166534 !important;
-  border-radius: 9999px !important;
+  background: #ffedd5 !important;
+  color: #c2410c !important;
+  border-radius: 12px !important;
 }
 
 .calendar-today {
@@ -103,8 +108,8 @@
 @media (max-width: 768px) {
   .custom-range-calendar {
     flex-wrap: wrap !important;
-    padding: 8px !important;
-    border-radius: 0 !important;
+    padding: 6px !important;
+    border-radius: 14px !important;
   }
   .custom-range-calendar .react-datepicker__month-container {
     width: 100% !important;

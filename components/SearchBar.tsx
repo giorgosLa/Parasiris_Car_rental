@@ -9,7 +9,7 @@ import { useCarSearch } from "@/hooks/useCarSearch";
 import { useSearchStore } from "@/store/searchStore";
 import { useBookingStore } from "@/store/bookingStore";
 import type { SearchCriteria } from "@/store/searchStore";
-import { useTranslation } from "./LanguageProvider";
+import { useTranslation, useLanguage } from "./LanguageProvider";
 
 import {
   FaMapMarkerAlt,
@@ -23,15 +23,19 @@ import { format } from "date-fns";
 
 type LocationType = "airport" | "port" | "region";
 
-const locations: Array<{ name: string; type: LocationType }> = [
-  { name: "Heraklion Airport (HER)", type: "airport" },
-  { name: "Chania Airport (CHQ)", type: "airport" },
-  { name: "Heraklion", type: "region" },
-  { name: "Chania", type: "region" },
-  { name: "Rethymno", type: "region" },
-  { name: "Lasithi", type: "region" },
-  { name: "Heraklion Port", type: "port" },
-  { name: "Souda Port (Chania)", type: "port" },
+const locations: Array<{
+  nameEn: string;
+  nameEl: string;
+  type: LocationType;
+}> = [
+  { nameEn: "Heraklion Airport (HER)", nameEl: "Αεροδρόμιο Ηρακλείου (HER)", type: "airport" },
+  { nameEn: "Chania Airport (CHQ)", nameEl: "Αεροδρόμιο Χανίων (CHQ)", type: "airport" },
+  { nameEn: "Heraklion", nameEl: "Ηράκλειο", type: "region" },
+  { nameEn: "Chania", nameEl: "Χανιά", type: "region" },
+  { nameEn: "Rethymno", nameEl: "Ρέθυμνο", type: "region" },
+  { nameEn: "Lasithi", nameEl: "Λασίθι", type: "region" },
+  { nameEn: "Heraklion Port", nameEl: "Λιμάνι Ηρακλείου", type: "port" },
+  { nameEn: "Souda Port (Chania)", nameEl: "Λιμάνι Σούδας (Χανιά)", type: "port" },
 ];
 
 const times = [
@@ -66,6 +70,7 @@ export default function CarRentalSearchBar({
 }: Props) {
   const router = useRouter();
   const t = useTranslation();
+  const { lang } = useLanguage();
 
   const { searchCars } = useCarSearch();
   const { setSearchData } = useSearchStore();
@@ -402,6 +407,8 @@ function LocationPopup({
   onClose: () => void;
   onSelect: (value: string) => void;
 }) {
+  const { lang } = useLanguage();
+
   const renderIcon = (type: LocationType) => {
     if (type === "airport") return <FaPlane className="text-blue-500" />;
     if (type === "port") return <FaShip className="text-blue-500" />;
@@ -415,12 +422,14 @@ function LocationPopup({
       <div className="max-h-[60vh] overflow-auto rounded-xl border border-gray-200">
         {locations.map((loc) => (
           <button
-            key={loc.name}
-            onClick={() => onSelect(loc.name)}
+            key={loc.nameEn}
+            onClick={() => onSelect(`${loc.nameEn} / ${loc.nameEl}`)}
             className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-gray-50"
           >
             {renderIcon(loc.type)}
-            <span className="font-medium text-gray-800">{loc.name}</span>
+            <span className="font-medium text-gray-800">
+              {lang === "el" ? `${loc.nameEl} / ${loc.nameEn}` : `${loc.nameEn} / ${loc.nameEl}`}
+            </span>
           </button>
         ))}
       </div>
@@ -494,8 +503,15 @@ function DateRangePopup({
       onClose={onClose}
       className="w-full max-w-4xl p-4 bg-transparent shadow-none"
     >
-      <div className="max-w-4xl bg-white rounded-2xl shadow-lg p-4 border border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">{title}</h3>
+      <div className="max-w-4xl bg-white rounded-2xl shadow-lg p-4 border border-gray-100 relative">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-3 right-3 w-9 h-9 rounded-full border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300"
+        >
+          ✕
+        </button>
+        <h3 className="text-lg font-semibold text-gray-900 mb-3 pr-12">{title}</h3>
         <DatePicker
           inline
           monthsShown={2}
@@ -539,7 +555,16 @@ function DateRangePopup({
 function TimePopup({ title, onSelect }) {
   return (
     <Overlay onClose={() => onSelect(null)}>
-      <h3 className="text-lg font-semibold text-gray-900 mb-3">{title}</h3>
+      <div className="flex items-start justify-between mb-3">
+        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <button
+          type="button"
+          onClick={() => onSelect(null)}
+          className="w-9 h-9 rounded-full border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300"
+        >
+          ✕
+        </button>
+      </div>
 
       <div className="max-h-[60vh] overflow-auto mt-3 rounded-xl border border-gray-200">
         {times.map((t) => (
