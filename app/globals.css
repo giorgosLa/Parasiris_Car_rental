@@ -1,0 +1,129 @@
+@import "tailwindcss";
+@import "react-datepicker/dist/react-datepicker.css";
+@import "react-time-picker/dist/TimePicker.css";
+@import "react-clock/dist/Clock.css";
+
+.react-datepicker {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-family: inherit !important;
+}
+
+.react-datepicker__header {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+.react-datepicker__day--selected {
+  background-color: #2563eb !important;
+  color: white !important;
+  border-radius: 0.5rem !important;
+}
+
+.react-datepicker__day--today {
+  font-weight: 700 !important;
+  color: #fbbf24 !important;
+}
+
+.custom-range-calendar {
+  background: #f6faff !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 12px !important;
+  border-radius: 16px !important;
+  display: flex !important;
+  gap: 10px !important;
+  flex-wrap: nowrap !important;
+}
+
+.custom-range-calendar .react-datepicker__header {
+  background: transparent !important;
+  border-bottom: none !important;
+  padding-top: 4px !important;
+}
+
+.custom-range-calendar .react-datepicker__month-container {
+  background: #ffffff !important;
+  border-radius: 14px !important;
+  padding: 10px !important;
+  margin: 4px !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06),
+    inset 0 0 0 1px #e2e8f0;
+  flex: 1 1 0 !important;
+  width: 50% !important;
+  min-width: 0 !important;
+}
+
+.custom-range-calendar .react-datepicker__month {
+  width: 100% !important;
+}
+
+.custom-range-calendar .react-datepicker__current-month {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+.custom-range-calendar .react-datepicker__day-name {
+  color: #0ea5e9 !important;
+  font-weight: 600 !important;
+}
+
+.custom-range-calendar .react-datepicker__day {
+  background: #f8fafc;
+  border-radius: 9999px;
+  margin: 2px;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+.calendar-range-start,
+.calendar-range-end {
+  background: #22c55e !important;
+  color: #ffffff !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 0 0 2px #16a34a !important;
+}
+
+.calendar-range-middle {
+  background: #d1fae5 !important;
+  color: #166534 !important;
+  border-radius: 9999px !important;
+}
+
+.calendar-today {
+  color: #facc15 !important;
+  font-weight: 700 !important;
+}
+
+@media (max-width: 768px) {
+  .custom-range-calendar {
+    flex-wrap: wrap !important;
+    padding: 8px !important;
+    border-radius: 0 !important;
+  }
+  .custom-range-calendar .react-datepicker__month-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 100% !important;
+    margin: 6px 0 !important;
+  }
+}
+
+.react-time-picker__wrapper {
+  border: none !important;
+}
+@keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

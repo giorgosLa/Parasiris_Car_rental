@@ -1,0 +1,62 @@
+{
+  "name": "car-rental",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+<<<<<<< HEAD
+    "build": "next build",
+=======
+    "postinstall": "prisma generate",
+    "build": "prisma generate && next build",
+>>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.0",
+    "@stripe/stripe-js": "^8.5.2",
+    "date-fns": "4.1.0",
+    "framer-motion": "12.23.24",
+    "lucide-react": "0.553.0",
+<<<<<<< HEAD
+    "next": "16.0.1",
+    "prisma": "6.19.0",
+    "react": "19.2.0",
+    "react-datepicker": "8.8.0",
+    "react-dom": "19.2.0",
+=======
+    "next": "^16.0.7",
+    "prisma": "6.19.0",
+    "react": "^19.2.1",
+    "react-datepicker": "8.8.0",
+    "react-dom": "^19.2.1",
+>>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
+    "react-hot-toast": "2.6.0",
+    "react-icons": "5.5.0",
+    "react-time-picker": "8.0.2",
+    "resend": "^6.5.2",
+    "stripe": "^20.0.0",
+    "zustand": "5.0.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4",
+<<<<<<< HEAD
+    "@types/node": "20",
+=======
+    "@types/node": "^20.19.25",
+>>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
+    "@types/react": "19",
+    "@types/react-dom": "19",
+    "autoprefixer": "10.4.21",
+    "eslint": "9",
+    "eslint-config-next": "16.0.1",
+    "postcss": "8.5.6",
+    "tailwindcss": "4.1.17",
+<<<<<<< HEAD
+    "typescript": "5"
+=======
+    "typescript": "^5.9.3"
+>>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
+  }
+}

@@ -1,0 +1,267 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+<<<<<<< HEAD
+model Reservation {
+  id               Int            @id @default(autoincrement())
+  userId           Int?
+  carId            Int
+  insurancePlanId  Int?
+  offerId          Int?
+  startDate        DateTime
+  endDate          DateTime
+  discount         Decimal?       @db.Decimal(4, 3)
+  longTermDiscount Boolean        @default(false)
+  totalCost        Decimal?       @db.Decimal(12, 2)
+  status           String         @default("pending")
+  name             String?
+  email            String?
+  phone            String?
+  createdAt        DateTime       @default(now())
+
+  Payment          Payment?
+  Car              Car            @relation(fields: [carId], references: [id])
+  InsurancePlan    InsurancePlan? @relation(fields: [insurancePlanId], references: [id])
+  User             User?          @relation(fields: [userId], references: [id])
+  Offer            Offer?         @relation(fields: [offerId], references: [id])
+  BookingExtra     BookingExtra[]
+=======
+model Booking {
+  id           Int            @id @default(autoincrement())
+  carId        Int
+  startDate    DateTime
+  endDate      DateTime
+  totalPrice   Decimal        @db.Decimal(12, 2)
+  status       String         @default("pending")
+  name         String
+  email        String
+  phone        String
+  createdAt    DateTime       @default(now())
+  userId       Int?
+  offerId      Int?
+  Car          Car            @relation(fields: [carId], references: [id])
+  Offer        Offer?         @relation(fields: [offerId], references: [id])
+  User         User?          @relation(fields: [userId], references: [id])
+  BookingExtra BookingExtra[]
+>>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
+}
+
+model BookingExtra {
+  id             Int          @id @default(autoincrement())
+<<<<<<< HEAD
+  reservationId  Int
+  extraServiceId Int
+  quantity       Int          @default(1)
+  createdAt      DateTime     @default(now())
+
+  Reservation    Reservation  @relation(fields: [reservationId], references: [id])
+  ExtraService   ExtraService @relation(fields: [extraServiceId], references: [id])
+
+  @@index([reservationId])
+=======
+  bookingId      Int
+  extraServiceId Int
+  quantity       Int          @default(1)
+  createdAt      DateTime     @default(now())
+  Booking        Booking      @relation(fields: [bookingId], references: [id])
+  ExtraService   ExtraService @relation(fields: [extraServiceId], references: [id])
+
+  @@index([bookingId])
+>>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
+  @@index([extraServiceId])
+}
+
+model Car {
+  id            Int             @id @default(autoincrement())
+  make          String
+  model         String
+  year          Int
+  licensePlate  String          @unique
+  imageUrl      String?
+  seats         Int
+  transmission  String
+  fuelType      String
+  available     Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  dailyPrice    Decimal         @db.Decimal(10, 2)
+  categoryId    Int?
+  status        CarStatus       @default(AVAILABLE)
+<<<<<<< HEAD
+
+  Reservation   Reservation[]
+  CalendarPrice CalendarPrice[]
+  CarCategory   CarCategory?    @relation(fields: [categoryId], references: [id])
+  CarImage      CarImage[]
+=======
+  Booking       Booking[]
+  CalendarPrice CalendarPrice[]
+  CarCategory   CarCategory?    @relation(fields: [categoryId], references: [id])
+  CarImage      CarImage[]
+  Reservation   Reservation[]
+>>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
+  SpecialPrice  SpecialPrice[]
+}
+
+model CarImage {
+  id        Int      @id @default(autoincrement())
+  carId     Int
+  imageUrl  String
+  alt       String?
+  createdAt DateTime @default(now())
+  Car       Car      @relation(fields: [carId], references: [id])
+
+  @@index([carId])
+}
+
+model SpecialPrice {
+  id        Int      @id @default(autoincrement())
+  carId     Int
+  title     String
+  startDate DateTime
+  endDate   DateTime
+  price     Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  Car       Car      @relation(fields: [carId], references: [id])
+
+  @@index([carId])
+}
+
+model CalendarPrice {
+  id        Int      @id @default(autoincrement())
+  carId     Int
+  date      DateTime
+  price     Decimal  @db.Decimal(10, 2)
+  note      String?
+  createdAt DateTime @default(now())
+  Car       Car      @relation(fields: [carId], references: [id])
+
+  @@unique([carId, date])
+  @@index([carId])
+}
+
+model CarCategory {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  Car         Car[]
+}
+
+model ExtraService {
+  id           Int            @id @default(autoincrement())
+  name         String
+  description  String?
+  pricePerDay  Decimal        @db.Decimal(10, 2)
+  isActive     Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  BookingExtra BookingExtra[]
+}
+
+model InsurancePlan {
+  id                 Int           @id @default(autoincrement())
+  slug               String        @unique
+  title              String
+  description        String?
+  dailyPrice         Decimal       @db.Decimal(10, 2)
+  excessAmount       Decimal?      @db.Decimal(10, 2)
+  includesWindScreen Boolean       @default(false)
+  includesTheftCover Boolean       @default(false)
+  roadsideAssistance Boolean       @default(false)
+  active             Boolean       @default(true)
+  currency           String        @default("EUR")
+  createdAt          DateTime      @default(now())
+<<<<<<< HEAD
+
+=======
+>>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
+  Reservation        Reservation[]
+}
+
+model Offer {
+  id          Int       @id @default(autoincrement())
+  code        String    @unique
+  title       String
+  description String?
+  discountPct Decimal   @db.Decimal(5, 2)
+  validFrom   DateTime
+  validTo     DateTime
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+<<<<<<< HEAD
+
+  Reservation Reservation[]
+=======
+  Booking     Booking[]
+>>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
+}
+
+model Payment {
+  id            Int         @id @default(autoincrement())
+  reservationId Int         @unique
+  amount        Decimal     @db.Decimal(12, 2)
+  method        String
+  status        String      @default("pending")
+  transactionId String?
+  paidAt        DateTime?
+  createdAt     DateTime    @default(now())
+<<<<<<< HEAD
+
+  Reservation   Reservation @relation(fields: [reservationId], references: [id])
+}
+
+=======
+  Reservation   Reservation @relation(fields: [reservationId], references: [id])
+}
+
+model Reservation {
+  id               Int            @id @default(autoincrement())
+  userId           Int
+  carId            Int
+  insurancePlanId  Int?
+  startDate        DateTime
+  endDate          DateTime
+  discount         Decimal?       @db.Decimal(4, 3)
+  longTermDiscount Boolean        @default(false)
+  stripeSessionId  String?  @unique
+  totalCost        Decimal?       @db.Decimal(12, 2)
+  status           String         @default("pending")
+  createdAt        DateTime       @default(now())
+  Payment          Payment?
+  Car              Car            @relation(fields: [carId], references: [id])
+  InsurancePlan    InsurancePlan? @relation(fields: [insurancePlanId], references: [id])
+  User             User           @relation(fields: [userId], references: [id])
+}
+
+>>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
+model User {
+  id          Int           @id @default(autoincrement())
+  email       String        @unique
+  name        String?
+  phone       String?
+  createdAt   DateTime      @default(now())
+<<<<<<< HEAD
+
+=======
+  Booking     Booking[]
+>>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
+  Reservation Reservation[]
+}
+
+enum CarStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
+  UNAVAILABLE
+<<<<<<< HEAD
+}
+=======
+}
+>>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
