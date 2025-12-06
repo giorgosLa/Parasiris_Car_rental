@@ -18,83 +18,45 @@ export default function SuccessContent() {
   const [loading, setLoading] = useState(true);
   const [payment, setPayment] = useState<StripeSessionData | null>(null);
 
-<<<<<<< HEAD
-  // ---- VERIFY PAYMENT ----
-=======
-  // -------------------------------------
-  // POLLING + FETCH FINAL PAYMENT DETAILS
-  // -------------------------------------
->>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
   useEffect(() => {
     if (!sessionId) {
       router.push("/");
       return;
     }
 
-<<<<<<< HEAD
-    const verifyPayment = async () => {
-      try {
-        const res = await fetch(
-          `/api/payments/session?session_id=${sessionId}`
-        );
-        const data: StripeSessionData = await res.json();
-
-        if (!res.ok || data.status !== "paid") {
-          router.push("/checkout");
-          return;
-        }
-
-        setPayment(data);
-        setTimeout(() => clearBooking(), 500);
-      } catch {
-        router.push("/");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    verifyPayment();
-  }, [clearBooking, router, sessionId]);
-
-  // ---- Loading UI ----
-  if (loading) {
-=======
     let attempts = 0;
     const maxAttempts = 15; // ~30 seconds
 
     const interval = setInterval(async () => {
-      attempts++;
+      attempts += 1;
 
-      const res = await fetch(`/api/payments/status?session_id=${sessionId}`);
-      const data = await res.json();
+      try {
+        const res = await fetch(`/api/payments/status?session_id=${sessionId}`);
+        const data = await res.json();
 
-      console.log("🔄 Polling:", data);
+        if (data.status === "confirmed") {
+          clearInterval(interval);
 
-      // --- SUCCESS ---
-      if (data.status === "confirmed") {
-        clearInterval(interval);
+          const verify = await fetch(
+            `/api/payments/session?session_id=${sessionId}`
+          );
+          const sessionData: StripeSessionData = await verify.json();
 
-        // Fetch full Stripe session data
-        const verify = await fetch(
-          `/api/payments/session?session_id=${sessionId}`
-        );
+          setPayment(sessionData);
+          setLoading(false);
+          setTimeout(() => clearBooking(), 500);
+          return;
+        }
 
-        const sessionData: StripeSessionData = await verify.json();
-        setPayment(sessionData);
-
-        clearBooking();
-        setLoading(false);
-        return;
+        if (data.status === "failed") {
+          clearInterval(interval);
+          router.push("/failed");
+          return;
+        }
+      } catch (err) {
+        console.error("Payment polling error:", err);
       }
 
-      // --- FAILED ---
-      if (data.status === "failed") {
-        clearInterval(interval);
-        router.push("/failed");
-        return;
-      }
-
-      // --- TOO MANY ATTEMPTS ---
       if (attempts >= maxAttempts) {
         clearInterval(interval);
         router.push("/failed");
@@ -104,11 +66,7 @@ export default function SuccessContent() {
     return () => clearInterval(interval);
   }, [sessionId, router, clearBooking]);
 
-  // -----------------------
-  // LOADING STATE
-  // -----------------------
   if (loading || !payment) {
->>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
     return (
       <div className="p-20 text-center text-gray-500 text-lg">
         {t("success.verifying")}
@@ -116,25 +74,8 @@ export default function SuccessContent() {
     );
   }
 
-<<<<<<< HEAD
-  if (!payment) {
-    return (
-      <div className="p-20 text-center text-red-600 text-lg">
-        {t("success.failed")}
-      </div>
-    );
-  }
-
   return (
     <main className="max-w-4xl mx-auto py-16 px-6">
-      {/* HEADER */}
-=======
-  // -----------------------
-  // SUCCESS UI
-  // -----------------------
-  return (
-    <main className="max-w-4xl mx-auto py-16 px-6">
->>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
       <h1 className="text-4xl font-bold text-green-600 text-center mb-6">
         {t("success.title")}
       </h1>
@@ -170,11 +111,6 @@ export default function SuccessContent() {
           </section>
         )}
 
-<<<<<<< HEAD
-        {/* BOOKING SECTION */}
-=======
-        {/* BOOKING INFO */}
->>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
         {criteria && (
           <section>
             <h2 className="text-xl font-semibold mb-4 text-gray-800">
@@ -236,11 +172,6 @@ export default function SuccessContent() {
           </div>
         </section>
 
-<<<<<<< HEAD
-        {/* ACTION BUTTONS */}
-=======
-        {/* BUTTONS */}
->>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
         <div className="flex flex-col sm:flex-row gap-4 pt-4">
           <button
             onClick={() => router.push("/")}

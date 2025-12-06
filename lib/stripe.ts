@@ -1,3 +1,9 @@
 import Stripe from "stripe";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+const stripeKey = process.env.STRIPE_SECRET_KEY || "sk_test_placeholder";
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.warn("STRIPE_SECRET_KEY is not set. Using placeholder key.");
+}
+
+export const stripe = new Stripe(stripeKey, {});

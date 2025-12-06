@@ -7,7 +7,6 @@ export type CarWithPricing = Prisma.CarGetPayload<{
     CarImage: true;
     CalendarPrice: true;
     SpecialPrice: true;
-    Booking: true;
     Reservation: true;
     CarCategory: true;
   };
@@ -54,14 +53,6 @@ export class CarService {
         status: "AVAILABLE",
         seats: seats ? { gte: seats } : undefined,
         categoryId: categoryId || undefined,
-
-        Booking: {
-          none: {
-            status: { not: "cancelled" },
-            AND: [{ startDate: { lte: end } }, { endDate: { gte: start } }],
-          },
-        },
-
         Reservation: {
           none: {
             status: { not: "cancelled" },
@@ -74,7 +65,6 @@ export class CarService {
         CarImage: true,
         CalendarPrice: true,
         SpecialPrice: true,
-        Booking: true,
         Reservation: true,
         CarCategory: true,
       },

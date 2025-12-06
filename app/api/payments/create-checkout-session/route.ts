@@ -1,18 +1,7 @@
 // app/api/payments/create-checkout-session/route.ts
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 import { z } from "zod";
-
-// ----------------------
-// 1. Stripe instance
-// ----------------------
-<<<<<<< HEAD
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
-  apiVersion: "2025-11-17.clover",
-});
-=======
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {});
->>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
+import { stripe } from "@/lib/stripe";
 
 // ----------------------
 // 2. ZOD Request Schema

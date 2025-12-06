@@ -35,45 +35,16 @@ export async function POST(req: Request) {
       where: {
         available: true,
         status: CarStatus.AVAILABLE,
-        NOT: {
-<<<<<<< HEAD
-          Reservation: {
-            some: {
-              AND: [
-                { startDate: { lt: end } }, // reservation starts before dropoff
-                { endDate: { gt: start } }, // reservation ends after pickup
-                { status: { not: "cancelled" } }, // ignore cancelled reservations
-=======
-          Booking: {
-            some: {
-              AND: [
-                { startDate: { lt: end } }, // booking starts before dropoff
-                { endDate: { gt: start } }, // booking ends after pickup
->>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
-              ],
-            },
+        Reservation: {
+          none: {
+            status: { not: "cancelled" },
+            AND: [{ startDate: { lt: end } }, { endDate: { gt: start } }],
           },
         },
       },
       include: {
         CarCategory: true,
         CarImage: true,
-<<<<<<< HEAD
-        Reservation: {
-          select: { id: true, status: true },
-          where: {
-            startDate: { lt: end },
-            endDate: { gt: start },
-            status: { not: "cancelled" },
-=======
-        Booking: {
-          select: { id: true },
-          where: {
-            startDate: { lt: end },
-            endDate: { gt: start },
->>>>>>> 633b30a68a2fe01490639401b60ab81c5bc6d1c1
-          },
-        },
       },
     });
 
