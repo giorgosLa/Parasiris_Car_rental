@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     if (!pickupDate || !dropoffDate)
       return NextResponse.json({ error: "Invalid dates" }, { status: 400 });
 
-    // Build actual datetime range
+    // Build datetime range
     const start = new Date(`${pickupDate}T${pickupTime || "00:00"}`);
     const end = new Date(`${dropoffDate}T${dropoffTime || "23:59"}`);
 
@@ -21,12 +21,13 @@ export async function POST(req: Request) {
       );
     }
 
+    // Calculate number of days
     const days = Math.max(
       1,
       Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
     );
 
-    // Build YYYY-MM-DD list for each rental day
+    // Build list of YYYY-MM-DD rental days
     const dayList: string[] = [];
     let cursor = new Date(start);
 
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
       cursor.setDate(cursor.getDate() + 1);
     }
 
-    // Fetch cars + calendar prices
+    // Fetch cars and all calendar prices
     const cars = await prisma.car.findMany({
       where: {
         available: true,
@@ -53,28 +54,49 @@ export async function POST(req: Request) {
       },
     });
 
-    const results = [];
+    const results: any[] = [];
 
     for (const car of cars) {
-      // Default price (Prisma Decimal → number)
-      const defaultDaily = Number(car.dailyPrice);
-
-      // Build map YYYY-MM-DD → price
-      const calendarMap = new Map<string, number>();
+      // Create map YYYY-MM-DD → price/null
+      const calendarMap = new Map<string, number | null>();
 
       for (const cp of car.CalendarPrice) {
         const key = cp.date.toISOString().split("T")[0];
-        calendarMap.set(key, Number(cp.price));
+        const price =
+          cp.price === null || cp.price === undefined ? null : Number(cp.price);
+        calendarMap.set(key, price);
       }
 
-      // Build price breakdown
-      const breakdown = dayList.map((dateKey) => ({
-        date: dateKey,
-        price: calendarMap.get(dateKey) ?? defaultDaily,
-      }));
+      let missingCalendarEntry = false;
+      let hasNullPrice = false;
 
-      // Sum total
-      const totalPrice = breakdown.reduce((sum, d) => sum + d.price, 0);
+      // Build price breakdown & validate
+      const breakdown = dayList.map((dateKey) => {
+        const price = calendarMap.get(dateKey);
+
+        if (price === undefined) {
+          // ❌ missing date → exclude vehicle
+          missingCalendarEntry = true;
+        }
+
+        if (price === null) {
+          // ❌ invalid price → exclude vehicle
+          hasNullPrice = true;
+        }
+
+        return { date: dateKey, price };
+      });
+
+      // ❌ If ANY date missing or null → skip entire vehicle
+      if (missingCalendarEntry || hasNullPrice) {
+        continue;
+      }
+
+      // Sum total price (now all prices are guaranteed valid numbers)
+      const totalPrice = breakdown.reduce(
+        (sum, d) => sum + (d.price as number),
+        0
+      );
 
       results.push({
         id: car.id,
@@ -85,7 +107,6 @@ export async function POST(req: Request) {
         fuelType: car.fuelType,
         transmission: car.transmission,
         image: car.imageUrl?.trim() || "/images/default-car.jpg",
-        pricePerDay: defaultDaily,
         totalPrice,
         days,
         breakdown,

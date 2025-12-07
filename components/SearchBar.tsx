@@ -29,14 +29,26 @@ const locations: Array<{
   nameEl: string;
   type: LocationType;
 }> = [
-  { nameEn: "Heraklion Airport (HER)", nameEl: "Αεροδρόμιο Ηρακλείου (HER)", type: "airport" },
-  { nameEn: "Chania Airport (CHQ)", nameEl: "Αεροδρόμιο Χανίων (CHQ)", type: "airport" },
+  {
+    nameEn: "Heraklion Airport (HER)",
+    nameEl: "Αεροδρόμιο Ηρακλείου (HER)",
+    type: "airport",
+  },
+  {
+    nameEn: "Chania Airport (CHQ)",
+    nameEl: "Αεροδρόμιο Χανίων (CHQ)",
+    type: "airport",
+  },
   { nameEn: "Heraklion", nameEl: "Ηράκλειο", type: "region" },
   { nameEn: "Chania", nameEl: "Χανιά", type: "region" },
   { nameEn: "Rethymno", nameEl: "Ρέθυμνο", type: "region" },
   { nameEn: "Lasithi", nameEl: "Λασίθι", type: "region" },
   { nameEn: "Heraklion Port", nameEl: "Λιμάνι Ηρακλείου", type: "port" },
-  { nameEn: "Souda Port (Chania)", nameEl: "Λιμάνι Σούδας (Χανιά)", type: "port" },
+  {
+    nameEn: "Souda Port (Chania)",
+    nameEl: "Λιμάνι Σούδας (Χανιά)",
+    type: "port",
+  },
 ];
 
 const times = [
@@ -84,11 +96,18 @@ export default function CarRentalSearchBar({
   const { setSearchData } = useSearchStore();
   const { setCriteria } = useBookingStore();
   // -------------------------------
+
+  const [showLateReturnWarning, setShowLateReturnWarning] = useState(false);
+
   const [pickupDate, setPickupDate] = useState<Date | null>(() =>
-    initialCriteria?.pickupDate ? parseDateFromString(initialCriteria.pickupDate) : null
+    initialCriteria?.pickupDate
+      ? parseDateFromString(initialCriteria.pickupDate)
+      : null
   );
   const [dropoffDate, setDropoffDate] = useState<Date | null>(() =>
-    initialCriteria?.dropoffDate ? parseDateFromString(initialCriteria.dropoffDate) : null
+    initialCriteria?.dropoffDate
+      ? parseDateFromString(initialCriteria.dropoffDate)
+      : null
   );
 
   const [pickupTime, setPickupTime] = useState(
@@ -201,9 +220,7 @@ export default function CarRentalSearchBar({
 
   return (
     <div
-      className={`w-full max-w-6xl mx-auto mt-16 mb-12 px-4 ${
-        className || ""
-      }`}
+      className={`w-full max-w-6xl mx-auto mt-16 mb-12 px-4 ${className || ""}`}
     >
       {/* MAIN BAR */}
       <div className="flex flex-col md:flex-row items-center bg-[#f3f4f6] rounded-2xl md:rounded-full shadow-lg p-3 md:p-4 gap-3 md:gap-5">
@@ -238,7 +255,9 @@ export default function CarRentalSearchBar({
         {/* DROPOFF DATE */}
         <DateButton
           label={t("search.dropoffDate")}
-          value={dropoffDate ? formatForAPI(dropoffDate) : t("search.selectDate")}
+          value={
+            dropoffDate ? formatForAPI(dropoffDate) : t("search.selectDate")
+          }
           icon={<FaCalendarAlt className="text-blue-500" />}
           onClick={() => setShowDatePopup(true)}
         />
@@ -256,6 +275,13 @@ export default function CarRentalSearchBar({
           onClick={() => setShowDropoffTimePopup(true)}
         />
 
+        {showLateReturnWarning && (
+          <p className="text-red-600 text-xs mt-1 font-medium">
+            ⚠️ Προσοχή: οι επιστροφές μετά τις 12:00 χρεώνονται ως +1 επιπλέον
+            ημέρα.
+          </p>
+        )}
+
         {/* SEARCH BTN */}
         <button
           onClick={handleSearch}
@@ -268,7 +294,9 @@ export default function CarRentalSearchBar({
       {/* Toggle Different dropoff */}
       <div className="flex items-center gap-4 mt-4 px-4">
         <label className="flex items-center gap-2 cursor-pointer">
-          <span className="text-sm text-gray-700">{t("search.differentDrop")}</span>
+          <span className="text-sm text-gray-700">
+            {t("search.differentDrop")}
+          </span>
           <input
             type="checkbox"
             checked={differentDrop}
@@ -330,6 +358,7 @@ export default function CarRentalSearchBar({
           title={t("search.dropoffTimeTitle")}
           onSelect={(t) => {
             setDropoffTime(t);
+            setShowLateReturnWarning(t > "12:00"); // <-- ΕΛΕΓΧΟΣ
             setShowDropoffTimePopup(false);
           }}
         />
@@ -428,7 +457,9 @@ function LocationPopup({
           >
             {renderIcon(loc.type)}
             <span className="font-medium text-gray-800">
-              {lang === "el" ? `${loc.nameEl} / ${loc.nameEn}` : `${loc.nameEn} / ${loc.nameEl}`}
+              {lang === "el"
+                ? `${loc.nameEl} / ${loc.nameEn}`
+                : `${loc.nameEn} / ${loc.nameEl}`}
             </span>
           </button>
         ))}
@@ -514,7 +545,9 @@ function DateRangePopup({
         >
           ✕
         </button>
-        <h3 className="text-lg font-semibold text-gray-900 mb-3 pr-12">{title}</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-3 pr-12">
+          {title}
+        </h3>
         <DatePicker
           inline
           monthsShown={2}
@@ -526,12 +559,10 @@ function DateRangePopup({
           locale={dpLocale}
           dayClassName={getDayClassName}
           calendarClassName="custom-range-calendar"
-          onChange={(dates) => handleChange(dates as [Date | null, Date | null])}
-          renderCustomHeader={({
-            monthDate,
-            decreaseMonth,
-            increaseMonth,
-          }) => (
+          onChange={(dates) =>
+            handleChange(dates as [Date | null, Date | null])
+          }
+          renderCustomHeader={({ monthDate, decreaseMonth, increaseMonth }) => (
             <div className="flex items-center justify-between px-3 pb-3 text-base font-semibold text-gray-900">
               <button
                 type="button"
@@ -540,7 +571,9 @@ function DateRangePopup({
               >
                 ←
               </button>
-              <span>{format(monthDate, "MMMM yyyy", { locale: dpLocale })}</span>
+              <span>
+                {format(monthDate, "MMMM yyyy", { locale: dpLocale })}
+              </span>
               <button
                 type="button"
                 onClick={increaseMonth}
@@ -600,8 +633,7 @@ function Overlay({
     >
       <div
         className={
-          className ||
-          "w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl"
+          className || "w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl"
         }
         onClick={(e) => e.stopPropagation()}
       >
