@@ -22,7 +22,6 @@ export default function CarsPage() {
   const { criteria, results } = useSearchStore();
   const { setSelectedCar } = useBookingStore();
 
-  // Αν χάσαμε τα δεδομένα (π.χ. πρώτη επίσκεψη / καθαρό localStorage)
   if (!results || !criteria) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-slate-50">
@@ -31,9 +30,7 @@ export default function CarsPage() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
               {t("cars.noSearchTitle")}
             </h2>
-            <p className="text-gray-600 mb-6">
-              {t("cars.noSearchSubtitle")}
-            </p>
+            <p className="text-gray-600 mb-6">{t("cars.noSearchSubtitle")}</p>
             <SearchBar className="mt-6 mb-0" />
           </div>
         </div>
@@ -41,10 +38,8 @@ export default function CarsPage() {
     );
   }
 
-  // Debug (μόνο για σένα)
   console.log("RESULTS RECEIVED FROM STORE:", results);
 
-  // Χτίζουμε τα cars για το UI, αλλά κρατάμε και το raw item
   const cars = results.map((item: CarResult) => {
     const totalPrice = Number(item.totalPrice);
     const pricePerDay = Number(item.pricePerDay);
@@ -113,7 +108,10 @@ export default function CarsPage() {
         <div className="flex flex-col gap-4 mb-6">
           <div className="bg-white/80 border border-orange-100 rounded-2xl shadow-sm p-5">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-700">
-              <Detail label={t("cars.pickup")} value={criteria.pickupLocation} />
+              <Detail
+                label={t("cars.pickup")}
+                value={criteria.pickupLocation}
+              />
               <Detail
                 label={t("cars.dates")}
                 value={`${criteria.pickupDate} → ${criteria.dropoffDate}`}
@@ -192,10 +190,12 @@ export default function CarsPage() {
                         <Perk text={t("cars.perk3")} />
                       </div>
 
+                      {/* PRICE BOX */}
                       <div className="md:w-56 bg-gray-50 border border-gray-200 rounded-xl p-4 text-right">
                         <p className="text-2xl font-bold text-gray-900">
                           €{car.price.toFixed(2)}
                         </p>
+
                         <p className="text-xs text-gray-600">
                           {t("cars.pricePerDay", {
                             price: `€${car.perDay}`,
@@ -203,10 +203,30 @@ export default function CarsPage() {
                           })}
                         </p>
 
+                        {/* DAILY BREAKDOWN  */}
+                        {car.raw.breakdown && car.raw.breakdown.length > 0 && (
+                          <div className="mt-3 text-left border-t pt-3 text-xs text-gray-700">
+                            <p className="font-semibold mb-1">
+                              Price breakdown:
+                            </p>
+
+                            <ul className="space-y-1 max-h-32 overflow-y-auto pr-1">
+                              {car.raw.breakdown.map((day, index) => (
+                                <li
+                                  key={index}
+                                  className="flex justify-between"
+                                >
+                                  <span>{day.date}</span>
+                                  <span>€{day.price.toFixed(2)}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
                         <button
                           className="mt-4 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold px-4 py-2 rounded-full transition shadow-md shadow-orange-200"
                           onClick={() => {
-                            // κρατάμε ΟΛΟ το raw αντικείμενο στο booking store
                             setSelectedCar(car.raw);
                             router.push(`/cars/${car.id}`);
                           }}
