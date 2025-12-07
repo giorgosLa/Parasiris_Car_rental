@@ -4,6 +4,7 @@ import { useSearchStore } from "@/store/searchStore";
 import { useBookingStore } from "@/store/bookingStore";
 import SearchBar from "@/components/SearchBar";
 import Image from "next/image";
+import { useEffect } from "react";
 import {
   FaUsers,
   FaDoorOpen,
@@ -21,7 +22,15 @@ export default function CarsPage() {
   const t = useTranslation();
   const { criteria, results } = useSearchStore();
   const { setSelectedCar } = useBookingStore();
-
+  useEffect(() => {
+    const el = document.getElementById("centertocars");
+    if (el) {
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, []);
   if (!results || !criteria) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-slate-50">
@@ -138,7 +147,7 @@ export default function CarsPage() {
                 key={car.id}
                 className="group bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition overflow-hidden"
               >
-                <div className="flex flex-col md:flex-row">
+                <div className="flex flex-col md:flex-row" id="centertocars">
                   {/* IMAGE */}
                   <div className="relative md:w-5/12 bg-gradient-to-br from-orange-50 to-white flex items-center justify-center p-6">
                     <div className="absolute top-4 left-4 text-xs font-semibold px-3 py-1 rounded-full bg-white/90 border border-orange-100 text-orange-600">
