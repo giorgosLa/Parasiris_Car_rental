@@ -25,8 +25,8 @@ export default function Navbar() {
           <Image
             src="/logos/logo.svg"
             alt="CarRental Logo"
-            width={140}
-            height={140}
+            width={100}
+            height={100}
             priority
           />
         </Link>
@@ -120,8 +120,8 @@ export default function Navbar() {
                   <Image
                     src="/logos/logo.svg"
                     alt="CarRental Logo"
-                    width={160}
-                    height={160}
+                    width={100}
+                    height={100}
                   />
                 </Link>
                 <button
@@ -129,7 +129,7 @@ export default function Navbar() {
                   className="text-gray-700 hover:text-orange-600"
                   aria-label="Close menu"
                 >
-                  <span className="text-xl font-bold">×</span>
+                  <span className="text-xl font-bold">X</span>
                 </button>
               </div>
 

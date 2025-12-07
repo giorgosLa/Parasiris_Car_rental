@@ -10,9 +10,7 @@ export const revalidate = 0;
 export const dynamic = "force-dynamic";
 
 function mapCarToCard(car: FleetCar): Car {
-  const image =
-    car.imageUrl?.trim() ||
-    "/images/no-car.png";
+  const image = car.imageUrl?.trim() || "/images/no-car.png";
 
   return {
     id: car.id.toString(),
@@ -52,16 +50,12 @@ export default async function Fleet() {
             Our Fleet / Ο στόλος μας
           </h2>
         </div>
-        <p className="text-gray-600 max-w-2xl">
-          Discover our curated lineup of reliable, fully serviced vehicles ready for
-          island trips, airport transfers, and city escapes. Εξερεύνησε τον προσεκτικά
-          επιλεγμένο στόλο μας, συντηρημένο και έτοιμο για ταξίδια, αεροδρόμια και
-          αποδράσεις στην πόλη.
-        </p>
       </div>
 
       {fleetCards.length === 0 ? (
-        <p className="text-gray-600">No vehicles found / Δεν βρέθηκαν οχήματα.</p>
+        <p className="text-gray-600">
+          No vehicles found / Δεν βρέθηκαν οχήματα.
+        </p>
       ) : (
         <div className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {fleetCards.map((car) => (

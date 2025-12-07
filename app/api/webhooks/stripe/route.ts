@@ -35,6 +35,12 @@ async function upsertReservationFromSession(
   const dropoffDate = metadata.dropoffDate;
   const pickupTime = metadata.pickupTime;
   const dropoffTime = metadata.dropoffTime;
+  const insurancePlanId =
+    metadata.insurancePlanId !== undefined &&
+    metadata.insurancePlanId !== null &&
+    metadata.insurancePlanId !== ""
+      ? Number(metadata.insurancePlanId)
+      : null;
 
   if (
     !email ||
@@ -64,11 +70,19 @@ async function upsertReservationFromSession(
       ? session.amount_total / 100
       : undefined);
 
+  console.log("🔥 Webhook metadata received:", session.metadata);
+  console.log("🔥 insurancePlanId RAW:", session.metadata?.insurancePlanId);
+  console.log(
+    "🔥 Type of insurancePlanId:",
+    typeof session.metadata?.insurancePlanId
+  );
+
   const reservation = await prisma.reservation.upsert({
     where: { stripeSessionId: session.id },
     update: {
       userId: user.id,
       carId: carIdNumber,
+      insurancePlanId,
       startDate,
       endDate,
       totalCost: totalCost ?? undefined,
@@ -78,11 +92,16 @@ async function upsertReservationFromSession(
       stripeSessionId: session.id,
       userId: user.id,
       carId: carIdNumber,
+      insurancePlanId,
       startDate,
       endDate,
       totalCost: totalCost ?? undefined,
       status,
     },
+  });
+  console.log("[stripe-webhook] reservation saved:", {
+    id: reservation.id,
+    insurancePlanId: reservation.insurancePlanId,
   });
 
   return reservation;
@@ -155,7 +174,10 @@ export async function POST(req: Request) {
     }
 
     try {
-      console.log("[stripe-webhook] Handling checkout.session.completed for", session.id);
+      console.log(
+        "[stripe-webhook] Handling checkout.session.completed for",
+        session.id
+      );
       const reservation = await upsertReservationFromSession(
         session,
         "confirmed",
@@ -241,16 +263,25 @@ export async function POST(req: Request) {
     const pi = event.data.object as Stripe.PaymentIntent;
     const meta = (pi.metadata || {}) as Record<string, string>;
     const sessionId =
-      meta.session_id || meta.checkout_session_id || meta.checkoutSessionId || "";
+      meta.session_id ||
+      meta.checkout_session_id ||
+      meta.checkoutSessionId ||
+      "";
 
-    console.log("[stripe-webhook] payment_intent.payment_failed; sessionId:", sessionId);
+    console.log(
+      "[stripe-webhook] payment_intent.payment_failed; sessionId:",
+      sessionId
+    );
 
     if (sessionId) {
       try {
         const session = await stripe.checkout.sessions.retrieve(sessionId);
         await upsertReservationFromSession(session, "failed");
       } catch (err) {
-        console.error("Failed to retrieve session for payment_intent failure", err);
+        console.error(
+          "Failed to retrieve session for payment_intent failure",
+          err
+        );
       }
     } else {
       try {
@@ -266,7 +297,10 @@ export async function POST(req: Request) {
           await updateReservationStatus(sessionId, "failed");
         }
       } catch (err) {
-        console.error("Failed to lookup Checkout Session for payment_intent", err);
+        console.error(
+          "Failed to lookup Checkout Session for payment_intent",
+          err
+        );
         await updateReservationStatus(sessionId, "failed");
       }
     }
@@ -277,7 +311,10 @@ export async function POST(req: Request) {
   // Checkout payment failed (synchronous payment error)
   if (type === "checkout.session.payment_failed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    console.log("[stripe-webhook] checkout.session.payment_failed:", session.id);
+    console.log(
+      "[stripe-webhook] checkout.session.payment_failed:",
+      session.id
+    );
     await upsertReservationFromSession(session, "failed");
     return NextResponse.json({ received: true });
   }
@@ -285,7 +322,10 @@ export async function POST(req: Request) {
   // Checkout async payment failed (SCA, bank declines etc)
   if (type === "checkout.session.async_payment_failed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    console.log("[stripe-webhook] checkout.session.async_payment_failed:", session.id);
+    console.log(
+      "[stripe-webhook] checkout.session.async_payment_failed:",
+      session.id
+    );
     await upsertReservationFromSession(session, "failed");
     return NextResponse.json({ received: true });
   }

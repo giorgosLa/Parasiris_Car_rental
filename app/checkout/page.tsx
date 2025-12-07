@@ -99,7 +99,7 @@ export default function CheckoutPage() {
       });
 
       const data = await res.json();
-
+      console.log("Checkout session response:", data.insurance);
       if (!res.ok || !data.url) {
         alert(t("checkout.failed"));
         return;

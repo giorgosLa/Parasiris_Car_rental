@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { stripe } from "@/lib/stripe";
+import { log } from "console";
 
 // ----------------------
 // 2. ZOD Request Schema
@@ -25,6 +26,7 @@ const CarSchema = z.object({
 
 const InsuranceSchema = z
   .object({
+    id: z.union([z.string(), z.number()]),
     title: z.string(),
     dailyPrice: z.number(),
   })
@@ -71,6 +73,7 @@ export async function POST(req: Request) {
     // ----------------------
     // 4. Create Stripe Session
     // ----------------------
+    console.log("🔥 Insurance raw object:", insurance);
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
@@ -94,6 +97,7 @@ export async function POST(req: Request) {
       metadata: {
         carId: String(car.id),
         carName,
+        insurancePlanId: insurance ? String(insurance.id) : "",
         insuranceTitle: insurance?.title ?? "",
         pickupLocation: criteria.pickupLocation,
         dropoffLocation: criteria.dropoffLocation,

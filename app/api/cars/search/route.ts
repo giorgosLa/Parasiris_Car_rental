@@ -63,8 +63,7 @@ export async function POST(req: Request) {
         fuelType: car.fuelType,
         transmission: car.transmission,
 
-        image:
-          car.imageUrl?.trim() || "/images/default-car.jpg",
+        image: car.imageUrl?.trim() || "/images/default-car.jpg",
 
         dailyPrice: daily,
         pricePerDay: daily,
@@ -73,7 +72,6 @@ export async function POST(req: Request) {
       };
     });
 
-    console.log("API RETURN:", formatted);
     return NextResponse.json(formatted);
   } catch (error: unknown) {
     console.error("Search error:", error);
